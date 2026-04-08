@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Grace - Reset Password</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5ede0; color: #3d2c1e; min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 1.5rem; }
+    .card { max-width: 380px; width: 100%; text-align: center; }
+    h1 { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.4rem; }
+    .subtitle { color: #7a6352; font-size: 0.95rem; line-height: 1.5; margin-bottom: 1.5rem; }
+    .input-wrap { margin-bottom: 1rem; text-align: left; }
+    label { display: block; font-size: 0.8rem; color: #7a6352; margin-bottom: 0.3rem; font-weight: 500; }
+    input { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid rgba(61,44,30,0.15); border-radius: 14px; background: rgba(255,255,255,0.6); font-size: 1rem; color: #3d2c1e; outline: none; transition: border-color 0.2s; }
+    input:focus { border-color: #6b8a72; }
+    .btn { width: 100%; padding: 0.85rem; border: none; border-radius: 999px; background-color: #8fb89a; color: #2c1e0f; font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s; }
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    .msg { margin-top: 1rem; font-size: 0.9rem; line-height: 1.5; }
+    .msg.error { color: #b44; }
+    .msg.success { color: #4a7c54; }
+    .footer { margin-top: 2rem; font-size: 0.75rem; color: #7a6352; }
+    .open-app { display: inline-block; margin-top: 1rem; padding: 0.7rem 1.5rem; background-color: #8fb89a; color: #2c1e0f; font-weight: 600; text-decoration: none; border-radius: 999px; font-size: 0.9rem; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h1>Grace</h1>
+    <div id="loading-view"><p class="subtitle">Opening Grace...</p></div>
+    <div id="form-view" style="display:none">
+      <p class="subtitle">Set your new password</p>
+      <div class="input-wrap"><label for="password">New password</label><input id="password" type="password" placeholder="At least 6 characters" minlength="6" autocomplete="new-password"></div>
+      <div class="input-wrap"><label for="confirm">Confirm password</label><input id="confirm" type="password" placeholder="Re-enter password" autocomplete="new-password"></div>
+      <button class="btn" id="submit-btn" onclick="resetPassword()">Update Password</button>
+      <div id="message" class="msg"></div>
+    </div>
+    <div id="success-view" style="display:none">
+      <p class="msg success">Your password has been updated. You can now open Grace and sign in with your new password.</p>
+      <a href="grace://open" class="open-app">Open Grace</a>
+    </div>
+    <div id="error-view" style="display:none">
+      <p class="msg error">This reset link is invalid or has expired. Please request a new one from the Grace app.</p>
+    </div>
+    <p class="footer">&copy; 2026 Grace. All rights reserved.</p>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+  <script>
+    var sb=window.supabase.createClient('https://rylkcdnyxlayercerlja.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJ5bGtjZG55eGxheWVyY2VybGphIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQyNjA5ODMsImV4cCI6MjA4OTgzNjk4M30.QV7oTy0SuMkaY-O9GL7m875KKi95VNK7h3xCgaIw0TA');
+    var params=new URLSearchParams(window.location.search);
+    var tokenHash=params.get('token');
+    var type=params.get('type');
+    if(tokenHash&&type==='recovery'){
+      var deepLink='grace://reset-password?token='+encodeURIComponent(tokenHash)+'&type=recovery';
+      window.location.href=deepLink;
+      setTimeout(function(){document.getElementById('loading-view').style.display='none';document.getElementById('form-view').style.display='block';},1500);
+    }else{
+      document.getElementById('loading-view').style.display='none';
+      document.getElementById('error-view').style.display='block';
+    }
+    async function resetPassword(){
+      var pw=document.getElementById('password').value,cf=document.getElementById('confirm').value,msg=document.getElementById('message'),btn=document.getElementById('submit-btn');
+      msg.textContent='';msg.className='msg';
+      if(pw.length<6){msg.textContent='Password must be at least 6 characters.';msg.className='msg error';return;}
+      if(pw!==cf){msg.textContent='Passwords do not match.';msg.className='msg error';return;}
+      btn.disabled=true;btn.textContent='Updating...';
+      try{
+        var v=await sb.auth.verifyOtp({token_hash:tokenHash,type:'recovery'});
+        if(v.error){msg.textContent='This link has expired. Please request a new one.';msg.className='msg error';btn.disabled=false;btn.textContent='Update Password';return;}
+        var u=await sb.auth.updateUser({password:pw});
+        if(u.error){msg.textContent=u.error.message||'Could not update password.';msg.className='msg error';btn.disabled=false;btn.textContent='Update Password';return;}
+        await sb.auth.signOut();
+        document.getElementById('form-view').style.display='none';document.getElementById('success-view').style.display='block';
+      }catch(e){msg.textContent='Something went wrong. Please try again.';msg.className='msg error';btn.disabled=false;btn.textContent='Update Password';}
+    }
+    document.getElementById('confirm').addEventListener('keydown',function(e){if(e.key==='Enter')resetPassword();});
+  </script>
+</body>
+</html>

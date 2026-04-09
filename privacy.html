@@ -189,6 +189,9 @@
     <h3>Analytics</h3>
     <p>Grace uses PostHog, an analytics provider with EU data hosting, to collect pseudonymous app usage data. Analytics events are routed through our Supabase infrastructure before reaching PostHog's EU servers. PostHog receives your anonymized account ID and event data only. PostHog does not receive your name, email, journal content, or any other personal information. You can review PostHog's privacy policy at <a href="https://posthog.com/privacy">posthog.com/privacy</a>.</p>
 
+    <h3>Error Monitoring</h3>
+    <p>Grace uses Sentry, an error monitoring service, to collect crash reports and diagnostic logs. Sentry may receive error messages, device information, and app version data. Sentry does not receive your name, email, journal content, or any other personal data. Session replays are disabled. You can review Sentry's privacy policy at <a href="https://sentry.io/privacy">sentry.io/privacy</a>.</p>
+
     <h3>Local Data</h3>
     <p>App monitoring preferences, notification settings, pause history, favorite quotes, and voice preferences are stored locally on your device. This data never leaves your device.</p>
 
@@ -269,7 +272,7 @@
 
     <p>We retain your account data and meditation session metadata on our servers for as long as your account is active. When you delete your account, all associated server-side data is permanently removed within 30 days. Locally stored data (journal entries, preferences, pause history) persists on your device until you delete the app.</p>
 
-    <p>Analytics data collected by PostHog is retained for 12 months and is automatically deleted thereafter.</p>
+    <p>Analytics data collected by PostHog is retained for 12 months and is automatically deleted thereafter. Error logs collected by Sentry are retained for 30 days.</p>
 
     <h2>10. Age Requirements &amp; Children's Privacy</h2>
 

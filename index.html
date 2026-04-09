@@ -21,14 +21,12 @@
     .msg.error { color: #b44; }
     .msg.success { color: #4a7c54; }
     .footer { margin-top: 2rem; font-size: 0.75rem; color: #7a6352; }
-    .open-app { display: inline-block; margin-top: 1rem; padding: 0.7rem 1.5rem; background-color: #8fb89a; color: #2c1e0f; font-weight: 600; text-decoration: none; border-radius: 999px; font-size: 0.9rem; }
   </style>
 </head>
 <body>
   <div class="card">
     <h1>Grace</h1>
-    <div id="loading-view"><p class="subtitle">Opening Grace...</p></div>
-    <div id="form-view" style="display:none">
+    <div id="form-view">
       <p class="subtitle">Set your new password</p>
       <div class="input-wrap"><label for="password">New password</label><input id="password" type="password" placeholder="At least 6 characters" minlength="6" autocomplete="new-password"></div>
       <div class="input-wrap"><label for="confirm">Confirm password</label><input id="confirm" type="password" placeholder="Re-enter password" autocomplete="new-password"></div>
@@ -37,7 +35,6 @@
     </div>
     <div id="success-view" style="display:none">
       <p class="msg success">Your password has been updated. You can now open Grace and sign in with your new password.</p>
-      <a href="grace://open" class="open-app">Open Grace</a>
     </div>
     <div id="error-view" style="display:none">
       <p class="msg error">This reset link is invalid or has expired. Please request a new one from the Grace app.</p>
@@ -50,12 +47,8 @@
     var params=new URLSearchParams(window.location.search);
     var tokenHash=params.get('token');
     var type=params.get('type');
-    if(tokenHash&&type==='recovery'){
-      var deepLink='grace://reset-password?token='+encodeURIComponent(tokenHash)+'&type=recovery';
-      window.location.href=deepLink;
-      setTimeout(function(){document.getElementById('loading-view').style.display='none';document.getElementById('form-view').style.display='block';},1500);
-    }else{
-      document.getElementById('loading-view').style.display='none';
+    if(!tokenHash||type!=='recovery'){
+      document.getElementById('form-view').style.display='none';
       document.getElementById('error-view').style.display='block';
     }
     async function resetPassword(){
